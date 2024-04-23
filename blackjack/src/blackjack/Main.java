@@ -136,7 +136,7 @@ public class Main extends JFrame {
      * Deals a card to the specified hand, shuffling the deck if necessary.
      * @param hand The hand to deal the card to.
      */
-    private void dealCard(ArrayList<Card> hand) {
+    private Card dealCard(ArrayList<Card> hand) {
         if (cardsDealt >= reshuffleThreshold) {
             shuffleDeck();
             JOptionPane.showMessageDialog(this, "Deck reshuffled");
@@ -145,6 +145,7 @@ public class Main extends JFrame {
         Card card = deck.remove(0);
         hand.add(card);
         cardsDealt++;
+        return card; // Return the dealt card
     }
 
     /**
@@ -179,10 +180,21 @@ public class Main extends JFrame {
      * Handles the Hit action by dealing a card to the player's hand and checking for bust.
      */
     private void hit() {
-        dealCard(playerHand);
-        int playerValue = calculateHandValue(playerHand);
+        Card drawnCard = dealCard(playerHand); // Deal a card to the player
+        int playerValue = calculateHandValue(playerHand); // Calculate player's hand value
+
         if (playerValue > 21) {
-            JOptionPane.showMessageDialog(this, "You are bust! You lose £" + currentBet);
+            // If the player busts, show the dealer's hand and the drawn card
+            StringBuilder bustMessage = new StringBuilder();
+            bustMessage.append("You drew: ").append(drawnCard.toString()).append("\n");
+            bustMessage.append("Dealer's Hand: ");
+            for (Card card : dealerHand) {
+                bustMessage.append(card.toString()).append(", ");
+            }
+            bustMessage.deleteCharAt(bustMessage.length() - 2); // Remove trailing comma
+
+            JOptionPane.showMessageDialog(this, "You are bust! You lose £" + currentBet + "\n\n" + bustMessage);
+            
             playerMoney -= currentBet;
             moneyLabel.setText("Money: £" + playerMoney);
             startGame();
@@ -243,11 +255,12 @@ public class Main extends JFrame {
                 hasAce = true;
             }
         }
-        if (hasAce && value + 10 <= 21) {
-            value += 10;
+        if (hasAce && value + 10 <= 21 && value + 10 > value) {
+            value += 10; // Add 10 if it doesn't cause a bust
         }
         return value;
     }
+
 
     /**
      * Main method to start the application.
